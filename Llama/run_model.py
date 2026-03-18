@@ -67,4 +67,8 @@ model.eval()
 device = "cuda" if torch.cuda.is_available() else "cpu"
 model = model.to(device)
 
-chat(model, tokenizer, "A old man is sitting")
+
+initial_prompts = input("Give some initial lines(1-3 words i.e. One upon a time): ")
+if(len(initial_prompts)) == 0:
+    initial_prompts = "<s>"
+chat(model, tokenizer, initial_prompts)
