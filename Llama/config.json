@@ -1,0 +1,18 @@
+{
+  "model_type": "tiny-llama",
+
+  "hidden_dim": 768,
+  "n_heads": 12,
+  "n_layer": 12,
+
+  "intermediate_dim": 1024,
+  "max_position_embedding": 256,
+
+  "n_kv_heads": 4,
+  "vocab_size": 32000,
+  "padding_idx": 2,
+
+  "rms_norm_eps": 1e-5,
+  "attention_dropout": 0.1,
+  "rope_theta": 10000
+}
