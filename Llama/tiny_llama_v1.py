@@ -1,28 +1,45 @@
+"""
+Tiny Llama **v1** architecture (dense decoder-only LM) and config loader.
+
+MoE and other variants live in separate modules (e.g. ``tiny_llama_v2.py``).
+
+Training defaults / shapes are overridden via JSON in ``configs/``:
+``tiny_llama_v1_small.json`` (v1 Small, ~72M) and ``tiny_llama_v1_base.json`` (v1 Base, ~128M).
+Use ``load_tiny_llama_config(path)`` to build a ``TinyLlamaConfig``.
+"""
+import json
+import math
+from dataclasses import dataclass, fields
+from pathlib import Path
+from typing import Union
+
 import torch
 import torch.nn as nn
 from torch.nn import functional as F
-import math
-from dataclasses import dataclass
 import torch.optim as optim
 
 
 @dataclass
 class TinyLlamaConfig:
-  hidden_dim:int = 768
-  n_heads:int = 12
-  n_layer:int = 12
-  head_dim:int = 64
-  batch_size: int = 32
-  max_position_embedding: int = 256
-  rms_norm_eps:float = 1e-5
-  attention_dropout: float = 0.1
-  rope_theta:int = 1e4
-  device:str = "cuda" if torch.cuda.is_available() else "cpu"
-  intermediate_dim: int = 1024
-  n_kv_heads:int = 4
-  vocab_size: int  = 10000
-  padding_idx: int = 2
+  """Defaults match **v1 Base** (~128M); override via JSON (e.g. ``configs/tiny_llama_v1_small.json`` for v1 Small)."""
 
+  hidden_dim: int = 768
+  n_heads: int = 12
+  n_layer: int = 12
+  head_dim: int = 64
+  batch_size: int = 12
+  max_position_embedding: int = 512
+  rms_norm_eps: float = 1e-5
+  attention_dropout: float = 0.1
+  rope_theta: float = 1e4
+  device: str = "cuda" if torch.cuda.is_available() else "cpu"
+  intermediate_dim: int = 3072
+  n_kv_heads: int = 4
+  vocab_size: int = 10000
+  padding_idx: int = 2
+  mlp_dropout: float = 0.1
+
+  # Training (kept for JSON presets / trainers; not all used inside this module)
   epochs: int = 10
   lr: float = 3e-4
   min_lr: float = 3e-5
@@ -33,13 +50,24 @@ class TinyLlamaConfig:
   eval_interval: int = 500
   val_batches: int = 50
   save_interval: int = 0
-  grad_accum_steps: int = 1
+  grad_accum_steps: int = 8
+  max_tokens: int = 3_000_000_000
   use_amp: bool = True
   use_compile: bool = True
   wandb_project: str = "tiny-llama"
 
   def __post_init__(self):
     self.head_dim = self.hidden_dim // self.n_heads
+
+
+def load_tiny_llama_config(path: Union[str, Path]) -> TinyLlamaConfig:
+  path = Path(path)
+  with path.open() as f:
+    raw = json.load(f)
+  raw.pop("model_type", None)
+  names = {f.name for f in fields(TinyLlamaConfig)}
+  kwargs = {k: v for k, v in raw.items() if k in names and v is not None}
+  return TinyLlamaConfig(**kwargs)
 
 
 class TinyLlamaRMSNorm(nn.Module):
@@ -103,11 +131,11 @@ class TinyLlamaMLP(nn.Module):
     self.up_proj = nn.Linear(config.hidden_dim,config.intermediate_dim)
     self.down_proj = nn.Linear(config.intermediate_dim,config.hidden_dim)
     self.act = nn.SiLU()
-
+    self.dropout = nn.Dropout(config.mlp_dropout) if config.mlp_dropout > 0 else nn.Identity()
 
   def forward(self,x):
     out = self.down_proj(self.act(self.gate_proj(x))*self.up_proj(x))
-    return out
+    return self.dropout(out)
 
 
 def repeat_kv(hidden_state,n_rep):

@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tiny Llama v1 Base — Tiny Models</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="site.css">
+</head>
+<body class="page-detail">
+
+<div class="container model-detail">
+  <nav class="section-nav anim">
+    <a href="index.html" class="back"><svg viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg> All models</a>
+    <span class="crumb">v1 Base</span>
+  </nav>
+
+  <div class="hero anim anim-d1">
+    <div class="hero-top">
+      <h2>Tiny Llama v1 Base</h2>
+      <span class="card-badge">128.49M params</span>
+    </div>
+    <p class="hero-desc">
+      Same 12-layer, 768-dim backbone as <strong>v1 Small</strong> with a much wider feed-forward (3072) and 512 token context. <strong>Pre-training:</strong> <a class="link-ds" href="https://huggingface.co/datasets/HuggingFaceFW/fineweb-edu" target="_blank">FineWeb-Edu</a> for ~0.6B tokens. Recipe in <code style="font-family:var(--mono);font-size:0.85em;">configs/tiny_llama_v1_base.json</code>. Run <code style="font-family:var(--mono);font-size:0.85em;">python run_model.py</code> and enter your HF repo, or pass <code style="font-family:var(--mono);font-size:0.85em;">--repo</code> / <code style="font-family:var(--mono);font-size:0.85em;">--weights</code> + <code style="font-family:var(--mono);font-size:0.85em;">--config</code> + <code style="font-family:var(--mono);font-size:0.85em;">--tokenizer-repo</code>.
+    </p>
+    <div class="hero-links">
+      <a class="primary" href="https://huggingface.co/srmty/tiny-llama-128m" target="_blank">Weights (Hub)</a>
+      <a href="https://github.com/srmty09/Tiny-Models/tree/main/Llama" target="_blank">Source</a>
+      <a href="https://wandb.ai/srmty_-nit-rourkela/tiny-llama/runs/rapzcc6t" target="_blank">W&amp;B (v1 Base)</a>
+    </div>
+  </div>
+
+  <p class="section-label" style="margin-top:40px;">Key features</p>
+  <div class="feature-grid anim anim-d2">
+    <div class="feature-item"><div class="f-name">Wider FFN</div><div class="f-desc">3072 intermediate (vs 1024 in v1 Small) — main param scaling</div></div>
+    <div class="feature-item"><div class="f-name">512 context</div><div class="f-desc">max_position_embedding 512</div></div>
+    <div class="feature-item"><div class="f-name">Training</div><div class="f-desc">Grad accum 8, batch 12, MLP dropout 0.1</div></div>
+    <div class="feature-item"><div class="f-name">GQA</div><div class="f-desc">12 Q heads, 4 KV heads (unchanged)</div></div>
+    <div class="feature-item"><div class="f-name">RoPE &amp; RMSNorm</div><div class="f-desc">Same recipe as v1 Small</div></div>
+    <div class="feature-item"><div class="f-name">Tokenizer</div><div class="f-desc">Default: same tokenizer repo as v1 Small for inference script</div></div>
+  </div>
+
+  <hr class="divider">
+
+  <div class="two-col">
+    <div class="table-card">
+      <div class="table-header">Architecture</div>
+      <table class="data-table">
+        <tbody>
+          <tr><td>Layers</td><td>12</td></tr>
+          <tr><td>Hidden dim</td><td>768</td></tr>
+          <tr><td>Attention heads</td><td>12</td></tr>
+          <tr><td>KV heads</td><td>4</td></tr>
+          <tr><td>Head dim</td><td>64</td></tr>
+          <tr><td>FFN dim</td><td>3,072</td></tr>
+          <tr><td>Max seq length</td><td>512</td></tr>
+          <tr><td>Vocab (config)</td><td>10,000</td></tr>
+          <tr><td>RoPE theta</td><td>10,000</td></tr>
+          <tr><td>RMS norm eps</td><td>1e-5</td></tr>
+          <tr><td>Attn dropout</td><td>0.1</td></tr>
+          <tr><td>MLP dropout</td><td>0.1</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="table-card">
+      <div class="table-header">Training config</div>
+      <table class="data-table">
+        <tbody>
+          <tr><td>Batch size</td><td>12</td></tr>
+          <tr><td>Learning rate</td><td>3e-4</td></tr>
+          <tr><td>Min LR</td><td>3e-5</td></tr>
+          <tr><td>Weight decay</td><td>0.1</td></tr>
+          <tr><td>Warmup steps</td><td>100</td></tr>
+          <tr><td>Max grad norm</td><td>1.0</td></tr>
+          <tr><td>Grad accum steps</td><td>8</td></tr>
+          <tr><td>Mixed precision</td><td>Yes</td></tr>
+          <tr><td>torch.compile</td><td>Yes</td></tr>
+          <tr><td>LR schedule</td><td>Cosine</td></tr>
+          <tr><td>Eval interval</td><td>500</td></tr>
+          <tr><td>Dataset</td><td>FineWeb-Edu</td></tr>
+          <tr><td>Tokens (approx.)</td><td>~0.6B</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <hr class="divider">
+
+  <p class="section-label">Training results</p>
+  <p style="font-size:0.95rem;color:var(--fg-secondary);max-width:52ch;margin-bottom:20px;line-height:1.65;">
+    FineWeb-Edu run: total tokens, throughput, perplexity, LR schedule, loss per token, and training loss (W&amp;B dashboard below).
+  </p>
+  <div class="metric-grid">
+    <div class="metric-card"><div class="m-label">Steps</div><div class="m-value">~13K</div></div>
+    <div class="metric-card"><div class="m-label">Tokens</div><div class="m-value">~0.6B</div></div>
+    <div class="metric-card"><div class="m-label">Final loss</div><div class="m-value">~3.5</div></div>
+    <div class="metric-card"><div class="m-label">Tok/s</div><div class="m-value">~17K</div></div>
+  </div>
+  <div class="metrics-img">
+    <img src="assets/tiny-llama-v1-base-training.png" alt="W&amp;B training curves: tokens, throughput, perplexity, learning rate, loss per token, loss" loading="lazy">
+    <div class="metrics-caption">
+      <span>W&amp;B &mdash; FineWeb-Edu pre-training (~0.6B tokens)</span>
+      <a href="https://wandb.ai/srmty_-nit-rourkela/tiny-llama/runs/rapzcc6t" target="_blank">Open run &rarr;</a>
+    </div>
+  </div>
+
+  <div class="page-nav-models">
+    <span>Also:</span>
+    <a href="tiny-llama-v1-small.html">Tiny Llama v1 Small (72M, TinyStories)</a>
+  </div>
+</div>
+
+<footer>
+  <div class="container">
+    MIT License &middot; Built by <a href="https://github.com/srmty09" target="_blank">srmty</a>
+  </div>
+</footer>
+
+</body>
+</html>
